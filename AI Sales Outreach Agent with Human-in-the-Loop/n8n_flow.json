@@ -1,0 +1,692 @@
+{
+  "name": "AI Sales Outreach Agent with Human-in-the-Loop",
+  "nodes": [
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"subject\": {\n      \"type\": \"string\",\n      \"description\": \"A compelling, personalized subject line for the email.\"\n    },\n    \"body\": {\n      \"type\": \"string\",\n      \"description\": \"The full body of the email, including greeting and sign-off. Use HTML line breaks <br> if the email tool requires them.\"\n    }\n    \n  },\n  \"required\": [\"subject\", \"body\"]\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        688,
+        304
+      ],
+      "id": "3f09b78f-48ee-436b-9e43-75aeb62155c9",
+      "name": "Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "ab5f30ee-4ced-4323-978a-f97a9329fc81",
+              "name": "Email_Subject",
+              "value": "={{ $json.output.subject }}",
+              "type": "string"
+            },
+            {
+              "id": "7a542426-fd7b-4698-b2f0-b761d8b18e8d",
+              "name": "Email_Body",
+              "value": "={{ $json.output.body }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        896,
+        80
+      ],
+      "id": "42b3aea9-26f8-4216-9799-fcd4c5749036",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        1424,
+        176
+      ],
+      "id": "582b82fe-72e4-4876-872b-c11be44ab7ed",
+      "name": "Google Gemini Chat Model1",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "A46P6OIjqR2mHZpX",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1PUPXQTaNZUPTxzUgWX1TlPKG6TG06H_gebzH3bBnhrc",
+          "mode": "list",
+          "cachedResultName": "AI Agent Project Data Setup",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1PUPXQTaNZUPTxzUgWX1TlPKG6TG06H_gebzH3bBnhrc/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1297877883,
+          "mode": "list",
+          "cachedResultName": "AI Agent Project Data Setup",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1PUPXQTaNZUPTxzUgWX1TlPKG6TG06H_gebzH3bBnhrc/edit#gid=1297877883"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        560,
+        304
+      ],
+      "id": "ef66909f-d489-4833-aa2d-47d6919e52c4",
+      "name": "Project DB",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "BuzsJkVhyBHfuxzO",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Mission\nDraft a personalized initial outreach email for a new lead based on the data provided below. Use your Google Sheets Tool to find a matching \"Completed Project\" to use as a case study before writing.\n\nLead Data\nLead Name: {{ $json[\"Full Name\"] }}\n\nCompany: {{ $json[\"Company Name\"] }}\n\n\n\nThe Problem: {{ $json[\"What is the biggest manual bottleneck in your business right now?\"] }}\n\n\nProject Goal: {{ $json[\"What is your primary goal for AI implementation?\"] }}\n\nInstructions\nSearch: Use the lead's \"Problem\" and \"Goal\" as search queries in the Project DB tool.\n\nMatch: If you find a project that used similar tools or solved a similar bottleneck, include it as a specific \"Proof Point.\"\n\nDraft: Create a Subject Line and Email Body. Focus on how we can specifically automate their workflow to solve their {{ $json[\"What is the biggest manual bottleneck in your business right now?\"] }}.\n\n",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "=Overview\nYou are the Lead Qualification & Outreach Strategist for an elite AI Automation Agency. Your role is to act as the \"brain\" between a new lead submission and the human sales team. You analyze client pain points, search our internal database for technical matches, and draft a bespoke outreach email that proves our agency's capability.\n\nTools\nProject DB: Use this to read the Completed Projects. Search this sheet specifically to find case studies that match the current lead’s profile.\n\nOutput Parser: Ensure your final response is structured correctly into \"Subject Line\" and \"Email Body\" so the human salesman can review them easily.\n\nRules\n\n\nEvidence-Based Selling: You must never invent fake case studies. If a match is found via the Google Sheets tool, reference it. If no direct match exists, pivot to describing our \"Strategic Framework\" for their specific industry.\n\nHyper-Personalization: Reference the lead’s specific \"Manual Bottleneck\" and \"Current Tool Stack.\" Explain exactly how an AI integration would bridge the gap between their current tools (e.g., CRM to Email).\n\nTone of Voice: Professional, analytical, and helpful. Avoid \"marketing hype\" words like \"revolutionary,\" \"game-changing,\" or \"unprecedented.\" Use precise technical language.\n\nThe \"Human\" Rule: Write as if you are a high-level consultant, not a bot. Do not use generic openers like \"I hope this email finds you well.\" Start with a direct observation about their business or bottleneck.\n\nNo Filler: Do not provide conversational preamble. Provide only the drafted email components.\n\nUse only 100 words to write email draft\n\nCRITICAL: Your final response must be a flat JSON object. Do not wrap the response in an 'output' key. Provide only the 'subject' and 'body' keys at the root level of the JSON"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        496,
+        80
+      ],
+      "id": "9eccca24-e7e9-405a-9053-e7ad5ae30ba3",
+      "name": "1st Email Writer"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Contextual History\nOriginal Lead Data: * Name: {{ $('Add New Intake to Sheet').item.json['Full Name'].split().first() }}\n\nProblem: {{ $('Add New Intake to Sheet').item.json['What is the biggest manual bottleneck in your business right now?'] }}\n\nPrevious Draft (Rejected): >\nsubject:{{ $('Edit Fields').item.json.Email_Subject }}\nbody: {{ $('Edit Fields').item.json.Email_Body }}\n\nHuman Feedback (The Correction): > {{ $json.data.text }}\n\n\n\n",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "=Overview\nYou are the Lead Outreach Editor. Your role is to take a rejected email draft and rewrite it based on specific human feedback. You have access to the \"Completed Projects\" database to pull new evidence if the salesperson requests a different case study or more technical proof.\n\nTools\nProject DB: Use this to re-query the \"Completed Projects\" sheet if the human feedback asks for a different project, more relevant results, or specific technical proof.\n\nOutput Parser: Ensure your final response is structured correctly into \"Subject Line\" and \"Email Body\" so the human salesman can review them easily.\n\n\n\nRules\nThe Feedback is Law: Your primary instruction is the human salesperson's feedback. If the feedback contradicts the original agency style, follow the feedback.\n\nDatabase Integration: If the human feedback suggests the current case study is a \"bad fit,\" use the Google Sheets Tool to find a better match from our past projects.\n\nNo Conversational Filler: Do not write \"Here is the revised draft.\" Output only the structured subject and body.\n\nTone Control: Adjust the tone (formal, casual, aggressive, or consultative) strictly based on the reviewer's comments.\n\nConsistency: Ensure the lead's name and company remain accurate while the messaging changes.\n\nUse 100 words to write email draft.\n\nCRITICAL: Your final response must be a flat JSON object. Do not wrap the response in an 'output' key. Provide only the 'subject' and 'body' keys at the root level of the JSON"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        1696,
+        176
+      ],
+      "id": "d8731e31-a8d1-4f22-9971-cde5a7375a07",
+      "name": "2nd Email writer"
+    },
+    {
+      "parameters": {
+        "operation": "sendAndWait",
+        "sendTo": "awaiscore866@gmail.com",
+        "subject": "={{ $json.Email_Subject }}",
+        "message": "={{ $json.Email_Body }}",
+        "responseType": "freeText",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1120,
+        -48
+      ],
+      "id": "95a7e638-23ce-4c05-8012-595fad4f91ec",
+      "name": "Human Feedback",
+      "webhookId": "21b47a16-19cc-41c4-b4fb-09b028c65dae",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "QK0axO00YqvsboD4",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "inputText": "={{ $json.data.text }}",
+        "categories": {
+          "categories": [
+            {
+              "category": "Approved",
+              "description": "Use this category if the salesman's feedback indicates the email is ready to be sent. This includes explicit approvals like 'looks good,' 'perfect,' 'send it,' or 'approved.' It also includes empty feedback or simple affirmative emojis (✅, 👍). If the salesman provides no further instructions and suggests the draft is sufficient, it falls here."
+            },
+            {
+              "category": "Rejected",
+              "description": "Use this category if the salesman provides constructive criticism, requests changes, or explicitly rejects the draft. This includes instructions to 'change the tone,' 'make it shorter,' 'fix the technical details,' or 'mention a different project.' Any feedback that implies the current version is not final and needs a rewrite by the 2nd AI Agent must be classified here."
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.textClassifier",
+      "typeVersion": 1.1,
+      "position": [
+        1344,
+        -48
+      ],
+      "id": "3b71eb40-1d87-47a0-88eb-c5e4450f35b7",
+      "name": "Feedback Evaluator"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "responsesApiEnabled": false,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        432,
+        304
+      ],
+      "id": "82a09027-8f38-440b-b71f-be5904323d18",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "8uGMLurC39AOTKqx",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "=awaishaleem20@gmail.com",
+        "subject": "={{ $('Edit Fields').item.json.Email_Subject }}",
+        "message": "={{ $('Edit Fields').item.json.Email_Body }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1760,
+        -96
+      ],
+      "id": "a2362745-66b4-4083-b3d6-7c1eed44060c",
+      "name": "Send a message",
+      "webhookId": "c18dd9b9-0424-4489-9e6d-f76b67bb9d6f",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "QK0axO00YqvsboD4",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "formTitle": "Build Your AI-First Workflow",
+        "formDescription": "The future of work is automated. Fill out the details below to start your AI transformation. We use your input to generate a custom project scope based on our portfolio of successful AI integrations. Let’s build something intelligent together.",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Full Name",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Company Name",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Email Address",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "What is the biggest manual bottleneck in your business right now?",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "What is your primary goal for AI implementation?",
+              "fieldType": "radio",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "Automating Customer Support"
+                  },
+                  {
+                    "option": "Lead Generation/Sales Automation"
+                  },
+                  {
+                    "option": "Internal Data Analysis"
+                  },
+                  {
+                    "option": "Content Creation"
+                  }
+                ]
+              },
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "What is your estimated budget for this project?",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "< $2,000 (Might be too low for custom dev)"
+                  },
+                  {
+                    "option": "$2,000 - $5,000"
+                  },
+                  {
+                    "option": "$5,000 - $10,000"
+                  },
+                  {
+                    "option": "$10,000+"
+                  }
+                ]
+              },
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "How soon are you looking to start?",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "Immediately"
+                  },
+                  {
+                    "option": "Within One Week"
+                  },
+                  {
+                    "option": "Within a Month"
+                  },
+                  {
+                    "option": "Just Researching"
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.5,
+      "position": [
+        -16,
+        80
+      ],
+      "id": "38ae22f4-82c1-485e-bd5f-56a5c73b2640",
+      "name": "On form submission",
+      "webhookId": "717f4a07-bb00-4cf8-b138-4fce5de498da"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1mt6L_rwelhWQ-qD4Mz3NlAZhvaMlWBljXzeP-JhpjfA",
+          "mode": "list",
+          "cachedResultName": "Leads DB",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1mt6L_rwelhWQ-qD4Mz3NlAZhvaMlWBljXzeP-JhpjfA/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1mt6L_rwelhWQ-qD4Mz3NlAZhvaMlWBljXzeP-JhpjfA/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Timestamp": "={{ $json.Timestamp }}",
+            "Full Name": "={{ $json['Full Name'] }}",
+            "Company Name": "={{ $json['Company Name'] }}",
+            "Working Email Address": "={{ $json['Working Email Address'] }}",
+            "What is the biggest manual bottleneck in your business right now?": "={{ $json['What is the biggest manual bottleneck in your business right now?'] }}",
+            "What is your primary goal for AI implementation?": "={{ $json['What is your primary goal for AI implementation?'] }}",
+            "What is your estimated budget for this project?": "={{ $json['What is your estimated budget for this project?'] }}",
+            "How soon are you looking to start?": "={{ $json['How soon are you looking to start?'] }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Timestamp",
+              "displayName": "Timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Full Name",
+              "displayName": "Full Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Company Name",
+              "displayName": "Company Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Working Email Address",
+              "displayName": "Working Email Address",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "What is the biggest manual bottleneck in your business right now?",
+              "displayName": "What is the biggest manual bottleneck in your business right now?",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "What is your primary goal for AI implementation?",
+              "displayName": "What is your primary goal for AI implementation?",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "What is your estimated budget for this project?",
+              "displayName": "What is your estimated budget for this project?",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "How soon are you looking to start?",
+              "displayName": "How soon are you looking to start?",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        208,
+        80
+      ],
+      "id": "502bc178-745a-44ac-afcc-5f6cac4d01ef",
+      "name": "Add New Intake to Sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "BuzsJkVhyBHfuxzO",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "\n\n# **AI Sales Outreach Agent with Human-in-the-Loop**\n\n\n### Automates sales outreach using AI-generated drafts with an integrated human approval step to ensure quality, personalization, and control.\n\n",
+        "height": 208,
+        "width": 1280
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -16,
+        -496
+      ],
+      "typeVersion": 1,
+      "id": "6ab2e902-d092-4823-8ae6-953dacab1a03",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "## **Lead Intake & Logging**\n\nCaptures new leads from form submissions and logs them into the CRM sheet for tracking.",
+        "height": 320,
+        "width": 432
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -64,
+        -48
+      ],
+      "typeVersion": 1,
+      "id": "ef423faa-b49c-4ae4-819d-2e286f788e73",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "## **Initial AI Draft Generation**\n\n\nAI generates the first outreach email draft using completed project data from the project sheet.\n",
+        "height": 544,
+        "width": 432
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        384,
+        -48
+      ],
+      "typeVersion": 1,
+      "id": "0082ff11-4536-4827-8bbd-10e374e19b7b",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "## **Human-in-the-Loop Approval**\n\nSends the draft to a human reviewer. The evaluator detects whether feedback is an approval or rejection.\n",
+        "height": 464,
+        "width": 560
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1056,
+        -160
+      ],
+      "typeVersion": 1,
+      "id": "704d98bd-b5fc-402f-a8e1-429cce832ea8",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "content": "## **Final Delivery or Rewrite Loop**\n\nIf approved, the message is sent. If rejected, AI rewrites the email based on feedback and loops back for review.",
+        "height": 656,
+        "width": 336
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1648,
+        -288
+      ],
+      "typeVersion": 1,
+      "id": "0ef53e59-448b-4f26-aee7-f0b015455872",
+      "name": "Sticky Note4"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "1st Email Writer",
+            "type": "ai_outputParser",
+            "index": 0
+          },
+          {
+            "node": "2nd Email writer",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Human Feedback",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Feedback Evaluator",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Project DB": {
+      "ai_tool": [
+        [
+          {
+            "node": "1st Email Writer",
+            "type": "ai_tool",
+            "index": 0
+          },
+          {
+            "node": "2nd Email writer",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "1st Email Writer": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "2nd Email writer": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Human Feedback": {
+      "main": [
+        [
+          {
+            "node": "Feedback Evaluator",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Feedback Evaluator": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "2nd Email writer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "1st Email Writer",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "2nd Email writer",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "Add New Intake to Sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add New Intake to Sheet": {
+      "main": [
+        [
+          {
+            "node": "1st Email Writer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "c228df98-5d88-40ab-bf57-1b42c4089fb4",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "94256795a3c42b245c0ea916b6f4834f2ddf6406e40e97335989a3034729bbda"
+  },
+  "id": "mhtPbT7-ubR-EFhn4w0Zl",
+  "tags": []
+}
