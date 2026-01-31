@@ -458,13 +458,14 @@
     {
       "parameters": {
         "content": "\n\n# **AI Sales Outreach Agent with Human-in-the-Loop**\n\n\n### Automates sales outreach using AI-generated drafts with an integrated human approval step to ensure quality, personalization, and control.\n\n",
-        "height": 208,
-        "width": 1280
+        "height": 192,
+        "width": 1104,
+        "color": 3
       },
       "type": "n8n-nodes-base.stickyNote",
       "position": [
-        -16,
-        -496
+        304,
+        -432
       ],
       "typeVersion": 1,
       "id": "6ab2e902-d092-4823-8ae6-953dacab1a03",
@@ -474,7 +475,8 @@
       "parameters": {
         "content": "## **Lead Intake & Logging**\n\nCaptures new leads from form submissions and logs them into the CRM sheet for tracking.",
         "height": 320,
-        "width": 432
+        "width": 432,
+        "color": 6
       },
       "type": "n8n-nodes-base.stickyNote",
       "position": [
@@ -489,7 +491,8 @@
       "parameters": {
         "content": "## **Initial AI Draft Generation**\n\n\nAI generates the first outreach email draft using completed project data from the project sheet.\n",
         "height": 544,
-        "width": 432
+        "width": 432,
+        "color": 4
       },
       "type": "n8n-nodes-base.stickyNote",
       "position": [
@@ -504,7 +507,8 @@
       "parameters": {
         "content": "## **Human-in-the-Loop Approval**\n\nSends the draft to a human reviewer. The evaluator detects whether feedback is an approval or rejection.\n",
         "height": 464,
-        "width": 560
+        "width": 560,
+        "color": 2
       },
       "type": "n8n-nodes-base.stickyNote",
       "position": [
@@ -682,7 +686,7 @@
     "executionOrder": "v1",
     "availableInMCP": false
   },
-  "versionId": "c228df98-5d88-40ab-bf57-1b42c4089fb4",
+  "versionId": "469df582-c0e3-4b99-b886-0f7aa5a370b3",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "94256795a3c42b245c0ea916b6f4834f2ddf6406e40e97335989a3034729bbda"
