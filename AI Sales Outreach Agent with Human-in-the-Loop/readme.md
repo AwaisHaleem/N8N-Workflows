@@ -1,5 +1,9 @@
 # AI Sales Outreach Agent with Human-in-the-Loop
 
+https://github.com/user-attachments/assets/8a5cf789-ae5e-4aa5-8a50-d4c713123c97
+
+
+
 ## 1. Problem Statement
 
 Many companies struggle with inefficient and time-consuming sales outreach processes. This results in missed opportunities as valuable leads may not be contacted promptly or effectively. Additionally, manual handling of leads can lead to errors and inconsistencies.
@@ -78,6 +82,8 @@ This AI-driven sales outreach workflow represents a significant advancement in a
 
 ---
 
-## 9. Visual Aids
 
-Include your workflow diagram, labeling key components to illustrate the flow of data and interactions between systems.
+
+
+
+
